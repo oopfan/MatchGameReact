@@ -33,11 +33,9 @@
         <p>
           You win when all pairs have been found.
         </p>
-        <p>
-          <button id="restart-game" type="button" class="btn btn-default">Restart Game</button>
+        <p id="restart-game-button">
         </p>
-        <p>
-          <button id="new-game" type="button" class="btn btn-default">New Game</button>
+        <p id="new-game-button">
         </p>
       </div>
       <div id="game" class="col-md-9">
@@ -45,28 +43,52 @@
     </div>
   </div>
   <script type="text/babel">
-    var Game = React.createClass( {
+    var Button = React.createClass( {
       render: function() {
-        return (
-          <div className="row">
-            <Card value="4" />
-            <Card value="3" />
-            <Card value="2" />
-            <Card value="1" />
-            <Card value="8" />
-            <Card value="5" />
-            <Card value="6" />
-            <Card value="2" />
-            <Card value="3" />
-            <Card value="7" />
-            <Card value="5" />
-            <Card value="1" />
-            <Card value="6" />
-            <Card value="8" />
-            <Card value="7" />
-            <Card value="4" />
-          </div>
-        );
+        return <button type="button" className="btn btn-default" onClick={this.clickButton}>{this.props.text}</button>;
+      },
+      clickButton: function() {
+        gameRendered.action(this.props.action);
+      }
+    });
+    var Game = React.createClass( {
+      getInitialState: function() {
+        return {
+          cardValues: this.generateCardValues()
+        };
+      },
+      render: function() {
+        var cards = this.state.cardValues.map(function(cardValue) {
+          return <Card value={cardValue} />;
+        });
+        var game = <div className="row">{cards}</div>;
+        return game;
+      },
+      action: function(actionValue) {
+        console.log(actionValue === 'new' ? 'new game' : 'restart game');
+        if (actionValue === 'new') {
+          var cardValues = this.generateCardValues();
+          this.setState({ cardValues: cardValues });
+        }
+      },
+      generateCardValues: function() {
+        var orderedCards = [];
+        for (var i = 1; i <= 8; i++) {
+          orderedCards.push(i);
+          orderedCards.push(i);
+        }
+        var randomCards = [];
+        while (orderedCards.length > 0) {
+          var randomIndex = this.getRandomInt(0, orderedCards.length);
+          randomCards.push(orderedCards[randomIndex]);
+          orderedCards.splice(randomIndex, 1);
+        }
+        return randomCards;
+      },
+      getRandomInt: function(min, max) {
+        min = Math.ceil(min);
+        max = Math.floor(max);
+        return Math.floor(Math.random() * (max - min)) + min; //The maximum is exclusive and the minimum is inclusive
       }
     });
     var Card = React.createClass( {
@@ -78,9 +100,17 @@
         );
       }
     });
-    ReactDOM.render(
+    var gameRendered = ReactDOM.render(
       <Game />,
       document.getElementById('game')
+    );
+    ReactDOM.render(
+      <Button text="New Game" action="new" />,
+      document.getElementById('new-game-button')
+    );
+    ReactDOM.render(
+      <Button text="Restart Game" action="restart" />,
+      document.getElementById('restart-game-button')
     );
   </script>
 </body>
