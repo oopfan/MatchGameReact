@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Match Game (React)</title>
+  <link rel="stylesheet" href="./resources/css/reset.css" type="text/css">
+  <link
+    href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+    rel="stylesheet"
+    integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u"
+    crossorigin="anonymous">
+  <link href="https://fonts.googleapis.com/css?family=Work+Sans:400,700,900" rel="stylesheet">
+  <link rel="stylesheet" href="./resources/css/style.css" type="text/css">
+  <link rel="icon" href="./favicon.ico" type="image/x-icon">
+  <script src="https://fb.me/react-0.14.7.js" type="text/javascript"></script>
+  <script src="https://fb.me/react-dom-0.14.7.js" type="text/javascript"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.25/browser.min.js" type="text/javascript"></script>
+</head>
+<body>
+  <div class="you-won">
+    <span></span>
+  </div>
+  <div class="container">
+    <div class="row">
+      <div class="col-md-3">
+        <h1>Match Game</h1>
+        <h2>Rules</h2>
+        <p>
+          Click on a card to reveal the number on the other side. Click on a second
+          card to try and find a match to the first. If you succeed, the pair will
+          be removed from play. If not, try again!
+        </p>
+        <h2>How To Win</h2>
+        <p>
+          You win when all pairs have been found.
+        </p>
+        <p>
+          <button id="restart-game" type="button" class="btn btn-default">Restart Game</button>
+        </p>
+        <p>
+          <button id="new-game" type="button" class="btn btn-default">New Game</button>
+        </p>
+      </div>
+      <div id="game" class="col-md-9">
+      </div>
+    </div>
+  </div>
+  <script type="text/babel">
+    var Game = React.createClass( {
+      render: function() {
+        return (
+          <div className="row">
+            <Card value="4" />
+            <Card value="3" />
+            <Card value="2" />
+            <Card value="1" />
+            <Card value="8" />
+            <Card value="5" />
+            <Card value="6" />
+            <Card value="2" />
+            <Card value="3" />
+            <Card value="7" />
+            <Card value="5" />
+            <Card value="1" />
+            <Card value="6" />
+            <Card value="8" />
+            <Card value="7" />
+            <Card value="4" />
+          </div>
+        );
+      }
+    });
+    var Card = React.createClass( {
+      render: function() {
+        return (
+          <div className="col-xs-3 col-sm-3 col-md-3 col-lg-3 card">
+            <span>{this.props.value}</span>
+          </div>
+        );
+      }
+    });
+    ReactDOM.render(
+      <Game />,
+      document.getElementById('game')
+    );
+  </script>
+</body>
+</html>
