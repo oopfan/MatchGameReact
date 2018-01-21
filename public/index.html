@@ -58,8 +58,18 @@
         };
       },
       render: function() {
+        var colors = [
+          'hsl(25, 85%, 65%)',
+          'hsl(55, 85%, 65%)',
+          'hsl(90, 85%, 65%)',
+          'hsl(160, 85%, 65%)',
+          'hsl(220, 85%, 65%)',
+          'hsl(265, 85%, 65%)',
+          'hsl(310, 85%, 65%)',
+          'hsl(360, 85%, 65%)',
+        ];
         var cards = this.state.cardValues.map(function(cardValue) {
-          return <Card value={cardValue} />;
+          return <Card value={cardValue} color={colors[cardValue - 1]} />;
         });
         var game = <div className="row">{cards}</div>;
         return game;
@@ -92,10 +102,19 @@
       }
     });
     var Card = React.createClass( {
+      getInitialState: function() {
+        return {
+          flipState: 'hidden'
+        };
+      },
       render: function() {
+        var style = {
+          color: this.state.flipState === 'flipped' ? 'rgb(204, 204, 204)' : 'rgb(255, 255, 255)',
+          backgroundColor: this.state.flipState === 'flipped' ? 'rgb(153, 153, 153)' : (this.state.flipState === 'selected' ? this.props.color : 'rgb(32, 64, 86)')
+        }
         return (
-          <div className="col-xs-3 col-sm-3 col-md-3 col-lg-3 card">
-            <span>{this.props.value}</span>
+          <div className="col-xs-3 col-sm-3 col-md-3 col-lg-3 card" style={style}>
+            <span>{this.state.flipState === 'hidden' ? '' : this.props.value}</span>
           </div>
         );
       }
