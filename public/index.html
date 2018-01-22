@@ -54,10 +54,31 @@
     var Game = React.createClass( {
       getInitialState: function() {
         return {
-          cardValues: this.generateCardValues()
+          cards: this.generateCards()
         };
       },
       render: function() {
+        var cards = this.state.cards.map(function(card) {
+          return <Card id={card.id} value={card.value} color={card.color} flipState={card.flipState} onCardClick={this.onCardClick} />;
+        }, this);
+        var game = <div className="row">{cards}</div>;
+        return game;
+      },
+      onCardClick: function(cardId) {
+        var cards = this.state.cards;
+        for (var i = 0; i < cards.length; i++) {
+          if (cards[i].id === cardId) {
+            cards[i].flipState = 'selected';
+          }
+        }
+        this.setState({ cards: cards });
+      },
+      action: function(actionValue) {
+        if (actionValue === 'new') {
+          this.setState({ cards: this.generateCards() });
+        }
+      },
+      generateCards: function() {
         var colors = [
           'hsl(25, 85%, 65%)',
           'hsl(55, 85%, 65%)',
@@ -68,18 +89,16 @@
           'hsl(310, 85%, 65%)',
           'hsl(360, 85%, 65%)',
         ];
-        var cards = this.state.cardValues.map(function(cardValue) {
-          return <Card value={cardValue} color={colors[cardValue - 1]} />;
+        var cardValues = this.generateCardValues();
+        var cards = cardValues.map(function(cardValue, index) {
+          return {
+            id: index,
+            value: cardValue,
+            color: colors[cardValue - 1],
+            flipState: 'hidden'
+          }
         });
-        var game = <div className="row">{cards}</div>;
-        return game;
-      },
-      action: function(actionValue) {
-        console.log(actionValue === 'new' ? 'new game' : 'restart game');
-        if (actionValue === 'new') {
-          var cardValues = this.generateCardValues();
-          this.setState({ cardValues: cardValues });
-        }
+        return cards;
       },
       generateCardValues: function() {
         var orderedCards = [];
@@ -102,21 +121,21 @@
       }
     });
     var Card = React.createClass( {
-      getInitialState: function() {
-        return {
-          flipState: 'hidden'
-        };
-      },
       render: function() {
         var style = {
-          color: this.state.flipState === 'flipped' ? 'rgb(204, 204, 204)' : 'rgb(255, 255, 255)',
-          backgroundColor: this.state.flipState === 'flipped' ? 'rgb(153, 153, 153)' : (this.state.flipState === 'selected' ? this.props.color : 'rgb(32, 64, 86)')
+          color: this.props.flipState === 'flipped' ? 'rgb(204, 204, 204)' : 'rgb(255, 255, 255)',
+          backgroundColor: this.props.flipState === 'flipped' ? 'rgb(153, 153, 153)' : (this.props.flipState === 'selected' ? this.props.color : 'rgb(32, 64, 86)')
         }
         return (
-          <div className="col-xs-3 col-sm-3 col-md-3 col-lg-3 card" style={style}>
-            <span>{this.state.flipState === 'hidden' ? '' : this.props.value}</span>
+          <div onClick={this.onClick} className="col-xs-3 col-sm-3 col-md-3 col-lg-3 card" style={style}>
+            <span>{this.props.flipState === 'hidden' ? '' : this.props.value}</span>
           </div>
         );
+      },
+      onClick: function() {
+        if (this.props.flipState === 'hidden') {
+          this.props.onCardClick(this.props.id);
+        }
       }
     });
     var gameRendered = ReactDOM.render(
