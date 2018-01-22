@@ -63,9 +63,41 @@
         return game;
       },
       onCardClick: function(cardIndex) {
-        var cards = this.state.cards;
-        cards[cardIndex].flipState = 'selected';
-        this.setState({ cards: cards });
+        if (this.state.cards[cardIndex].flipState !== 'hidden') {
+          return;
+        }
+        if (this.state.selected.length >= 2) {
+          return;
+        }
+
+        var nextState = this.state;
+        nextState.cards[cardIndex].flipState = 'selected';
+        nextState.selected.push(cardIndex);
+        this.setState(nextState);
+
+        if (nextState.selected.length < 2) {
+          return;
+        }
+
+        if (nextState.cards[nextState.selected[0]].value === nextState.cards[nextState.selected[1]].value) {
+          nextState.cards[nextState.selected[0]].flipState = 'flipped';
+          nextState.cards[nextState.selected[1]].flipState = 'flipped';
+          nextState.selected = [];
+          nextState.flipped += 2;
+          if (nextState.flipped === 16) {
+            console.log ('You won!');
+          }
+          this.setState(nextState);
+          return;
+        }
+
+        var that = this;
+        window.setTimeout(function() {
+          nextState.cards[nextState.selected[0]].flipState = 'hidden';
+          nextState.cards[nextState.selected[1]].flipState = 'hidden';
+          nextState.selected = [];
+          that.setState(nextState);
+        }, 500);
       },
       action: function(actionValue) {
         if (actionValue === 'new') {
