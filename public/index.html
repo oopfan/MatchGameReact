@@ -16,13 +16,13 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.25/browser.min.js" type="text/javascript"></script>
 </head>
 <body>
-  <div class="you-won">
-    <span></span>
+  <div id="you-won">
+    <span>You're a Winner!</span>
   </div>
-  <div class="container">
+  <div id="match-game" class="container">
     <div class="row">
       <div class="col-md-3">
-        <h1>Match Game</h1>
+        <h1>Match Game (React)</h1>
         <h2>Rules</h2>
         <p>
           Click on a card to reveal the number on the other side. Click on a second
@@ -30,40 +30,30 @@
           be removed from play. If not, try again!
         </p>
         <h2>How To Win</h2>
-        <p>
-          You win when all pairs have been found.
-        </p>
-        <p id="restart-game-button">
-        </p>
-        <p id="new-game-button">
-        </p>
+        <p>You win when all pairs have been found.</p>
+        <p id="restart-game-button"></p>
+        <p id="new-game-button"></p>
       </div>
-      <div id="game" class="col-md-9">
-      </div>
+      <div id="game" class="col-md-9"></div>
     </div>
   </div>
   <script type="text/babel">
-    var Button = React.createClass( {
-      render: function() {
-        return <button type="button" className="btn btn-default" onClick={this.clickButton}>{this.props.text}</button>;
-      },
-      clickButton: function() {
-        gameRendered.action(this.props.action);
-      }
-    });
+
     var Game = React.createClass( {
       getInitialState: function() {
         return this.newGame();
       },
+
       render: function() {
-        var cards = this.state.cards.map(function(card, index) {
-          return <Card value={card.value} flipState={card.flipState} onCardClick={this.onCardClick.bind(this, index)} />;
+        var cards = this.state.cards.map(function(card, cardIndex) {
+          return <Card cardValue={card.cardValue} cardState={card.cardState} onCardClick={this.onCardClick.bind(this, cardIndex)} />;
         }, this);
         var game = <div className="row">{cards}</div>;
         return game;
       },
+
       onCardClick: function(cardIndex) {
-        if (this.state.cards[cardIndex].flipState !== 'hidden') {
+        if (this.state.cards[cardIndex].cardState !== 'hidden') {
           return;
         }
         if (this.state.selected.length >= 2) {
@@ -71,7 +61,7 @@
         }
 
         var nextState = this.state;
-        nextState.cards[cardIndex].flipState = 'selected';
+        nextState.cards[cardIndex].cardState = 'selected';
         nextState.selected.push(cardIndex);
         this.setState(nextState);
 
@@ -79,13 +69,18 @@
           return;
         }
 
-        if (nextState.cards[nextState.selected[0]].value === nextState.cards[nextState.selected[1]].value) {
-          nextState.cards[nextState.selected[0]].flipState = 'flipped';
-          nextState.cards[nextState.selected[1]].flipState = 'flipped';
+        if (nextState.cards[nextState.selected[0]].cardValue === nextState.cards[nextState.selected[1]].cardValue) {
+          nextState.cards[nextState.selected[0]].cardState = 'solved';
+          nextState.cards[nextState.selected[1]].cardState = 'solved';
           nextState.selected = [];
-          nextState.flipped += 2;
-          if (nextState.flipped === 16) {
-            console.log ('You won!');
+          nextState.solved += 2;
+          if (nextState.solved === 16) {
+            document.getElementById('you-won').style.display = 'flex';
+            document.getElementById('match-game').style.opacity = '0.1';
+            window.setTimeout(function() {
+              document.getElementById('you-won').style.display = 'none';
+              document.getElementById('match-game').style.opacity = '1';
+            }, 2000);
           }
           this.setState(nextState);
           return;
@@ -93,47 +88,52 @@
 
         var that = this;
         window.setTimeout(function() {
-          nextState.cards[nextState.selected[0]].flipState = 'hidden';
-          nextState.cards[nextState.selected[1]].flipState = 'hidden';
+          nextState.cards[nextState.selected[0]].cardState = 'hidden';
+          nextState.cards[nextState.selected[1]].cardState = 'hidden';
           nextState.selected = [];
           that.setState(nextState);
         }, 500);
       },
-      action: function(actionValue) {
-        if (actionValue === 'new') {
+
+      onButtonClick: function(action) {
+        if (action === 'new') {
           this.setState(this.newGame());
         } else {
           this.setState(this.restartGame());
         }
       },
+
       newGame: function() {
         return {
           cards: this.generateCards(),
           selected: [],
-          flipped: 0
+          solved: 0
         };
       },
+
       restartGame: function() {
         var cards = this.state.cards;
         cards.forEach(function(card) {
-          card.flipState = 'hidden';
+          card.cardState = 'hidden';
         });
         return {
           cards: cards,
           selected: [],
-          flipped: 0
+          solved: 0
         };
       },
+
       generateCards: function() {
         var cardValues = this.generateCardValues();
         var cards = cardValues.map(function(cardValue) {
           return {
-            value: cardValue,
-            flipState: 'hidden'
+            cardValue: cardValue,
+            cardState: 'hidden'
           }
         });
         return cards;
       },
+
       generateCardValues: function() {
         var orderedCards = [];
         for (var i = 1; i <= 8; i++) {
@@ -148,12 +148,14 @@
         }
         return randomCards;
       },
+
       getRandomInt: function(min, max) {
         min = Math.ceil(min);
         max = Math.floor(max);
         return Math.floor(Math.random() * (max - min)) + min; //The maximum is exclusive and the minimum is inclusive
       }
     });
+
     var Card = React.createClass( {
       render: function() {
         var colors = [
@@ -167,24 +169,37 @@
           'hsl(360, 85%, 65%)',
         ];
         var style = {
-          color: this.props.flipState === 'flipped' ? 'rgb(204, 204, 204)' : 'rgb(255, 255, 255)',
-          backgroundColor: this.props.flipState === 'flipped' ? 'rgb(153, 153, 153)' : (this.props.flipState === 'selected' ? colors[this.props.value - 1] : 'rgb(32, 64, 86)')
+          color: this.props.cardState === 'solved' ? 'rgb(204, 204, 204)' : 'rgb(255, 255, 255)',
+          backgroundColor: this.props.cardState === 'solved' ? 'rgb(153, 153, 153)' : (this.props.cardState === 'selected' ? colors[this.props.cardValue - 1] : 'rgb(32, 64, 86)')
         }
         return (
           <div onClick={this.props.onCardClick} className="col-xs-3 col-sm-3 col-md-3 col-lg-3 card" style={style}>
-            <span>{this.props.flipState === 'hidden' ? '' : this.props.value}</span>
+            <span>{this.props.cardState === 'hidden' ? '' : this.props.cardValue}</span>
           </div>
         );
       }
     });
+
+    var Button = React.createClass( {
+      render: function() {
+        return <button type="button" className="btn btn-default" onClick={this.onClick}>{this.props.text}</button>;
+      },
+
+      onClick: function() {
+        gameRendered.onButtonClick(this.props.action);
+      }
+    });
+
     var gameRendered = ReactDOM.render(
       <Game />,
       document.getElementById('game')
     );
+
     ReactDOM.render(
       <Button text="New Game" action="new" />,
       document.getElementById('new-game-button')
     );
+
     ReactDOM.render(
       <Button text="Restart Game" action="restart" />,
       document.getElementById('restart-game-button')
